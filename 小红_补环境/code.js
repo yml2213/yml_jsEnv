@@ -1,6 +1,6 @@
 
-
-(function() {
+;;;;;;
+!(function() {
     var I7 = {
         A: 647,
         s: 430,
