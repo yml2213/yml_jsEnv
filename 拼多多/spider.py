@@ -18,7 +18,7 @@ params = {  # 定义查询参数字典
     'size': '100'  # 每页大小
 }
 
-with open('./vm.js', 'r', encoding='utf-8') as fp:  # 以只读方式打开本地文件'/vm.js'
+with open('./main.js', 'r', encoding='utf-8') as fp:  # 以只读方式打开本地文件'/main.js'
     jscode = fp.read()  # 读取文件中的JavaScript代码
 
 anti_content = execjs.compile(jscode).call('get_encrypt')  # 使用execjs编译并运行JavaScript代码以获取加密内容

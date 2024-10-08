@@ -31,7 +31,7 @@ json_data = {
     ],
 }
 
-with open('./vm.js','r',encoding='utf-8') as fp:
+with open('./main.js','r',encoding='utf-8') as fp:
     jscode = fp.read()
     result = execjs.compile(jscode).call('get_encrypt')
     print(result)
