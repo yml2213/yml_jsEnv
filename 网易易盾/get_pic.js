@@ -12,7 +12,7 @@ const CodeName = "网易易盾"
 const env = "wyyd"
 const fs = require("fs")
 const yml = require("yml2213-tool");
-const {get_cb_fp, get_body_data} = require("./code_带环境");
+const {get_cb_fp, get_body_data} = require("./code解密后_带环境");
 const request = require("request-promise-native");
 let sendLog = []
 const mode = 1  // 并发-2   顺序-1
@@ -40,11 +40,11 @@ class User {
     }
 
     async userTask() {
-        await this.get_ac_token()  //
-        await this.get_pic()  //
+        // await this.get_ac_token()  //
+        // await this.get_pic()  //
 
 
-        // await this.test()  //
+        await this.test()  //
 
 
         // await this.check()  //
@@ -53,16 +53,66 @@ class User {
     }
 
     async test() {
-
         for (let i = 0; i < 50; i++) {
             await this.get_ac_token()  //
             await this.get_pic()  //
 
         }
-
         console.log(`运行 50 次, 成功 ${this.suss} 次, 通过率: ${this.suss / 50 * 100} %`)
     }
 
+    async get_ac_token() {
+        try {
+            const options = {
+                method: 'get',
+                url: `https://c.dun.163.com/api/v2/getconf`,
+                params: {
+                    'referer': "https://dun.163.com/trial/jigsaw",
+                    'zoneId': "",
+                    'id': "07e2387ab53a4d6f930b8d9a9be71bdf",
+                    'ipv6': "false",
+                    'runEnv': "10",
+                    'iv': "4",
+                    'type': "2",
+                    'loadVersion': "2.5.0",
+                    'callback': "__JSONP_efvo9cw_17"
+                },
+                headers: {
+                    'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36",
+                    'Accept-Language': "zh-CN,zh;q=0.9,fr;q=0.8,de;q=0.7,en;q=0.6",
+                    'Cache-Control': "no-cache",
+                    'Pragma': "no-cache",
+                    'Referer': "https://dun.163.com/",
+                    'Sec-Fetch-Dest': "script",
+                    'Sec-Fetch-Mode': "no-cors",
+                    'Sec-Fetch-Site': "same-site",
+                    'sec-ch-ua': "\"Google Chrome\";v=\"129\", \"Not=A?Brand\";v=\"8\", \"Chromium\";v=\"129\"",
+                    'sec-ch-ua-mobile': "?0",
+                    'sec-ch-ua-platform': "\"Windows\"",
+                    // 'Cookie': "_ga=GA.1.2a13d78f094d2.4ad4872a240497976944; Hm_lvt_4671c5d502135636b837050ec6d716ce=1728311696; __root_domain_v=.163.com; _qddaz=QD.263128311696112; Hm_lpvt_4671c5d502135636b837050ec6d716ce=1728376966"
+                }
+            }
+            // console.log(options)
+            // console.log(`=========================`)
+            let {res} = await yml.request(options)
+            // console.log(res)
+            res = res.split('(')[1].split(')')[0]
+            try {
+                res = JSON.parse(res)
+            } catch (e) {
+                console.log(e)
+            }
+            // console.log(res)
+            if (res.error === 0) {
+                this.dt = res.data.dt
+                this.ac_token = res.data.ac.token
+            } else {
+                this.log(res)
+            }
+        } catch (error) {
+            console.log(error)
+        }
+    }
 
 
     async get_pic() {
@@ -76,7 +126,7 @@ class User {
                     'referer': "https://dun.163.com/trial/jigsaw",
                     'zoneId': "CN31",
                     'dt': this.dt,
-                    'acToken': "9ca17ae2e6ffcda170e2e6eeb8b861a9b484d0e160f8b08ba2c15a879f9b82d2598cefbeb1b553ada9fbb0c92af0feaec3b92ab8bc9b92f863b0b48992c85e839b9ba2d55aa68d99a9f041a29485ccd94289a9ee9e",
+                    'acToken': this.ac_token,
                     'id': "07e2387ab53a4d6f930b8d9a9be71bdf",
                     'fp': fp,
                     'https': "true",
@@ -98,8 +148,8 @@ class User {
                     'audio': "false",
                     'sizeType': "10",
                     'smsVersion': "v3",
-                    'token': "1d40884cbecb48d2b4918252a6fda6b2",
-                    'callback': "__JSONP_yx0plgd_12"
+                    'token': "",
+                    'callback': `__JSONP_${yml.random.string(7)}_1`
                 },
                 headers: {
                     'Accept': '*/*',
@@ -261,58 +311,6 @@ class User {
 
 
 
-    async get_ac_token() {
-        try {
-            const options = {
-                method: 'get',
-                url: `https://c.dun.163.com/api/v2/getconf`,
-                params: {
-                    'referer': "https://dun.163.com/trial/jigsaw",
-                    'zoneId': "",
-                    'id': "07e2387ab53a4d6f930b8d9a9be71bdf",
-                    'ipv6': "false",
-                    'runEnv': "10",
-                    'iv': "4",
-                    'type': "2",
-                    'loadVersion': "2.5.0",
-                    'callback': "__JSONP_efvo9cw_17"
-                },
-                headers: {
-                    'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36",
-                    'Accept-Language': "zh-CN,zh;q=0.9,fr;q=0.8,de;q=0.7,en;q=0.6",
-                    'Cache-Control': "no-cache",
-                    'Pragma': "no-cache",
-                    'Referer': "https://dun.163.com/",
-                    'Sec-Fetch-Dest': "script",
-                    'Sec-Fetch-Mode': "no-cors",
-                    'Sec-Fetch-Site': "same-site",
-                    'sec-ch-ua': "\"Google Chrome\";v=\"129\", \"Not=A?Brand\";v=\"8\", \"Chromium\";v=\"129\"",
-                    'sec-ch-ua-mobile': "?0",
-                    'sec-ch-ua-platform': "\"Windows\"",
-                    // 'Cookie': "_ga=GA.1.2a13d78f094d2.4ad4872a240497976944; Hm_lvt_4671c5d502135636b837050ec6d716ce=1728311696; __root_domain_v=.163.com; _qddaz=QD.263128311696112; Hm_lpvt_4671c5d502135636b837050ec6d716ce=1728376966"
-                }
-            }
-            // console.log(options)
-            // console.log(`=========================`)
-            let {res} = await yml.request(options)
-            // console.log(res)
-            res = res.split('(')[1].split(')')[0]
-            try {
-                res = JSON.parse(res)
-            } catch (e) {
-                console.log(e)
-            }
-            // console.log(res)
-            if (res.error === 0) {
-                this.dt = res.data.dt
-                this.ac_token = res.data.ac.token
-            } else {
-                this.log(res)
-            }
-        } catch (error) {
-            console.log(error)
-        }
-    }
 
 
     async check() {

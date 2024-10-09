@@ -1,4 +1,4 @@
-function watch1(obj, name) {
+function watch2(obj, name) {
     return new Proxy(obj, {
         get: function (target, p, receiver) {
             if (p === 'crypto') {
@@ -66,19 +66,17 @@ window = globalThis;
 
 window.external = watch({}, "window.external")
 window.NECaptcha = watch({}, "window.NECaptcha")
-
-window.addEventListener = function () {
-}
+window.addEventListener =watch({}, "window.addEventListener")
 
 Audio = function () {
-    // console.log(arguments)
+    console.log(arguments)
 }
 watch(Audio, "Audio")
 
 window.CanvasRenderingContext2D = watch(function () {
     // debugger;
     // console.log(arguments)
-}, "window_CanvasRenderingContext2D")
+}, "我的 window.CanvasRenderingContext2D")
 
 window.getComputedStyle = watch(function () {
     getPropertyValue:watch(function () {
@@ -94,6 +92,7 @@ HTMLDivElement = function HTMLDivElement() {
     this.style = {
         color: ''
     };
+    this.className = '';
     this.style = watch(this.style, "this.style");
     this.addEventListener = watch(function () {
         // console.log(arguments)
@@ -123,15 +122,8 @@ HTMLIFrameElement = function HTMLIFrameElement() {
 
 
 document = {
-    body: watch({
-        addBehavior: watch({}, "document.body_addBehavior"),
-        appendChild: watch(function () {
-            // console.log(`document.body_appendChild=====> ${arguments}`)
-            // console.log(arguments)
-        }, "document.body_appendChild"),
-    }, "document.body"),
-    createElement: function createElement(tag_name) {
-        // console.log("创建标签===>", tag_name);
+    createElement: watch(function createElement(tag_name) {
+        console.log("创建标签===>", tag_name);
         // console.log(arguments)
         if (tag_name.toLocaleLowerCase() === "canvas") {
             return watch({
@@ -163,9 +155,27 @@ document = {
         }
 
 
-    },
+    }, "我的 document.createElement"),
+    documentElement: watch({
+        style: {},
+        attachEvent: function () {
+        },
+        addEventListener: function () {
+        },
+        getAttribute: watch(function () {
+        }, "document_documentElement.getAttribute"),
+    }, "我的 document.documentElement"),
+    body: watch({
+        addBehavior: watch({}, "document.body_addBehavior"),
+        appendChild: watch(function () {
+            // console.log(`document.body_appendChild=====> ${arguments}`)
+            // console.log(arguments)
+        }, "document.body_appendChild"),
+    }, "我的 document.body"),
     createEvent: watch(function () {
-    }, "document_createEvent"),
+        console.log(arguments);
+        // debugger;
+    }, "我的 document.createEvent"),
 
     getElementsByTagName: function (tag_name) {
         console.log("获取标签===>", tag_name);
@@ -183,21 +193,23 @@ document = {
             }, "getElementsByTagName('script')")
         }
     },
-    getElementById: function () {
-    },
-    documentElement: watch({
-        style: {},
-        attachEvent: function () {
-        },
-        addEventListener: function () {
-        },
-        getAttribute: watch(function () {
-        }, "document_documentElement.getAttribute"),
-    }, "document.documentElement"),
+    getElementById: watch(function (id) {
+        // console.log(arguments);
+        // console.log(id)
+        // debugger;
+        if (id.toLocaleLowerCase() === "NECaptchaSafeWindow".toLocaleLowerCase()) {
+            return watch(function () {
+                debugger;
+                console.log(arguments);
+                contentWindow = window;
+            }, "yml__ document.getElementById_NECaptchaSafeWindow")
+        };
+
+    }, "我的 document.getElementById"),
+
     attachEvent: function () {
     },
-    addEventListener: function () {
-    },
+    addEventListener: watch({}, "我的 document.addEventListener"),
     cookie: '',
     compatMode: "CSS1Compat",
 
@@ -240,7 +252,6 @@ navigator = {
     // plugins: watch({
     //     length: 0
     // }, "navigator_plugins ====>")
-
 }
 
 
@@ -490,7 +501,7 @@ indexedDB = watch(indexedDB, "indexedDB")
             q = document.createElement("div"),
             G = /^(?:click|dblclick|contextmenu|DOMMouseScroll|(mouse|touch|pointer)(?:\w+))$/,
             K = document;
-        K = K.compatMode && "CSS1Compat" !== K.compatMode ? K.body : K.documentElement;
+        K = K.compatMode && "CSS1Compat" !== K.compatMode ? K.body : K.documentElement;  // todo K 会报错 跟浏览器不一样 undefined
         var F = /Mobile/i.test(window.navigator.userAgent),
             U = F && /Android/i.test(window.navigator.userAgent),
             R = function () {
@@ -499,8 +510,10 @@ indexedDB = watch(indexedDB, "indexedDB")
                     O = window.navigator;
                 "undefined" != typeof O.maxTouchPoints ? T = O.maxTouchPoints : "undefined" != typeof O.msMaxTouchPoints && (T = O.msMaxTouchPoints);
                 try {
+                    // 监测点   浏览器会报错  不用补
                     document.createEvent("TouchEvent");
-                    I = !0;
+                    // I = !0;
+                    I = !1
                 } catch (z) {
                 }
                 var Z = "ontouchstart" in window;
@@ -508,16 +521,20 @@ indexedDB = watch(indexedDB, "indexedDB")
             }(),
             j = function () {
                 try {
-                    document.createEvent("PointerEvent");
-                    return !0;
+                    // 检测点   浏览器会报错 不用补   浏览器走 catch
+                    // document.createEvent("PointerEvent");
+                    // return !0;
+                    return !1;
                 } catch (T) {
                     return !1;
                 }
             }(),
             N = function () {
                 try {
+                    // 检测点 Audio()
                     var T = new Audio();
-                    return "oncanplaythrough" in T;
+                    return true;
+                    // return "oncanplaythrough" in T;
                 } catch (I) {
                     return !1;
                 }
@@ -532,13 +549,16 @@ indexedDB = watch(indexedDB, "indexedDB")
             C = "_fixed_" + Math.random().toString(36).slice(2, 7),
             w = !1;
         try {
-            document.createElement("div").addEventListener("test", function () {
-            }, Object.defineProperty({}, "passive", {
-                get: function () {
-                    w = !0;
-                    return !1;
-                }
-            }));
+            // 检测点   检测
+            // document.createElement("div").addEventListener("test", function () {
+            // }, Object.defineProperty({}, "passive", {
+            //     get: function () {
+            //         // 检测点   检测
+            //         w = !0;
+            //         return !1;
+            //     }
+            // }));
+            w = true;
         } catch (T) {
         }
         Object.assign(V.prototype, {
@@ -814,6 +834,7 @@ indexedDB = watch(indexedDB, "indexedDB")
                 height: f0 - z
             });
         };
+        // 检测点 总结  通过属性判断
         A.exports = E;
     }, function (A, L, D) {
         var Y = D(3);
@@ -1680,7 +1701,8 @@ indexedDB = watch(indexedDB, "indexedDB")
                 fN = fs(fR);
             return fG(fu(fn, fN));
         }
-        window.j=f8;
+
+        window.j = f8;
 
         function f9(fR, fj) {
             var fn = fq(fj),
@@ -1698,7 +1720,8 @@ indexedDB = watch(indexedDB, "indexedDB")
             }
             return fe(fW);
         }
-        window.R=ff;
+
+        window.R = ff;
 
         var fv = function () {
                 function fR(fj, fn) {
@@ -7623,6 +7646,7 @@ indexedDB = watch(indexedDB, "indexedDB")
                 v1 = J(X(fY, 75));
             return [fy, fV, fB, fJ, fX, fP, fs, fr, fM, fu, fS, fq, fG, fe, fK, fF, fU, fc, fR, fj, fn, fN, fQ, fl, ft, fm, fk, fW, fb, fC, fw, fE, fT, fI, fO, fo, fd, fp, fZ, fg, fz, fa, fH, fh, fx, v0, v1];
         }
+
         window.P = G;
 
         var K = function () {
@@ -8276,7 +8300,7 @@ indexedDB = watch(indexedDB, "indexedDB")
                                 //         vY.push(P[354]);
                                 //     }
                                 // }
-                                return  "ActiveBorder:rgb(0, 0, 0):ActiveCaption:rgb(0, 0, 0):AppWorkspace:rgb(255, 255, 255):Background:rgb(255, 255, 255):ButtonFace:rgb(240, 240, 240):ButtonHighlight:rgb(240, 240, 240):ButtonShadow:rgb(240, 240, 240):ButtonText:rgb(0, 0, 0):CaptionText:rgb(0, 0, 0):GrayText:rgb(109, 109, 109):Highlight:rgb(0, 120, 215):HighlightText:rgb(255, 255, 255):InactiveBorder:rgb(0, 0, 0):InactiveCaption:rgb(255, 255, 255):InactiveCaptionText:rgb(128, 128, 128):InfoBackground:rgb(255, 255, 255):InfoText:rgb(0, 0, 0):Menu:rgb(255, 255, 255):MenuText:rgb(0, 0, 0):Scrollbar:rgb(255, 255, 255):ThreeDDarkShadow:rgb(0, 0, 0):ThreeDFace:rgb(240, 240, 240):ThreeDHighlight:rgb(0, 0, 0):ThreeDLightShadow:rgb(0, 0, 0):ThreeDShadow:rgb(0, 0, 0):Window:rgb(255, 255, 255):WindowFrame:rgb(0, 0, 0):WindowText:rgb(0, 0, 0)"
+                                return "ActiveBorder:rgb(0, 0, 0):ActiveCaption:rgb(0, 0, 0):AppWorkspace:rgb(255, 255, 255):Background:rgb(255, 255, 255):ButtonFace:rgb(240, 240, 240):ButtonHighlight:rgb(240, 240, 240):ButtonShadow:rgb(240, 240, 240):ButtonText:rgb(0, 0, 0):CaptionText:rgb(0, 0, 0):GrayText:rgb(109, 109, 109):Highlight:rgb(0, 120, 215):HighlightText:rgb(255, 255, 255):InactiveBorder:rgb(0, 0, 0):InactiveCaption:rgb(255, 255, 255):InactiveCaptionText:rgb(128, 128, 128):InfoBackground:rgb(255, 255, 255):InfoText:rgb(0, 0, 0):Menu:rgb(255, 255, 255):MenuText:rgb(0, 0, 0):Scrollbar:rgb(255, 255, 255):ThreeDDarkShadow:rgb(0, 0, 0):ThreeDFace:rgb(240, 240, 240):ThreeDHighlight:rgb(0, 0, 0):ThreeDLightShadow:rgb(0, 0, 0):ThreeDShadow:rgb(0, 0, 0):Window:rgb(255, 255, 255):WindowFrame:rgb(0, 0, 0):WindowText:rgb(0, 0, 0)"
                                 // return vY.join(P[57]);
                             }
 
@@ -8400,46 +8424,46 @@ indexedDB = watch(indexedDB, "indexedDB")
                                 };
                             ("undefined" == typeof fH ? "undefined" : D(fH)) == P[270] ? vL.g = fH : (null != fH.b && void 0 != fH.b && (vL.b = fH.b), null != fH.a && void 0 != fH.a && (vL.a = fH.a));
                             this.get = function () {
-                                var vD = [],
-                                    vY = [];
-                                if (fn) {
-                                    vD.push(v7());
-                                    vD.push(v8());
-                                    vD.push(!!window[P[407]]);
-                                    fQ[P[264]] ? vD.push(D(fQ[P[264]][P[306]])) : vD.push("undefined");
-                                    vD.push(D(window[P[444]]));
-                                    vD.push(fl[P[196]]);
-                                    vD.push(fl[s[49]]);
-                                    var vy;
-                                    if (vy = vL.l) {
-                                        try {
-                                            var vV = fQ[P[170]](P[445]);
-                                            vy = !(!vV[s[79]] || !vV[s[79]](P[359]));
-                                        } catch (vB) {
-                                            vy = !1;
-                                        }
-                                    }
-                                    if (vy) {
-                                        try {
-                                            vD.push(v3());
-                                            vL.b && vD.push(v0());
-                                        } catch (vJ) {
-                                            vD.push(P[61]);
-                                        }
-                                    }
-                                    vD.push(v2());
-                                    vL.a && vY.push(fh());
-                                    vY.push(fl[s[0]]);
-                                    vY.push(fl[P[154]]);
-                                    vY.push(window[P[263]][P[365]]);
-                                    vL.o && (vy = window[P[263]] ? [window[P[263]][P[318]], window[P[263]][s[9]]] : [M[6], M[6]], ("undefined" == typeof vy ? "undefined" : D(vy)) !== P[465] && vY.push(vy.join(P[140])));
-                                    vY.push(new Date()[P[130]]());
-                                    vY.push(fl[P[123]]);
-                                    vY.push(v4());
-                                }
-                                vy = [];
-                                vL.g ? (vy.push(vL.g(vD.join(s[46]))), vy.push(vL.g(vY.join(s[46])))) : (vy.push(fY(vD.join(s[46]))), vy.push(fY(vY.join(s[46]))));
-                                vy=["14819259374952", "1983962275258"];
+                                // var vD = [],
+                                //     vY = [];
+                                // if (fn) {
+                                //     vD.push(v7());
+                                //     vD.push(v8());
+                                //     vD.push(!!window[P[407]]);
+                                //     fQ[P[264]] ? vD.push(D(fQ[P[264]][P[306]])) : vD.push("undefined");
+                                //     vD.push(D(window[P[444]]));
+                                //     vD.push(fl[P[196]]);
+                                //     vD.push(fl[s[49]]);
+                                //     var vy;
+                                //     if (vy = vL.l) {
+                                //         try {
+                                //             var vV = fQ[P[170]](P[445]);
+                                //             vy = !(!vV[s[79]] || !vV[s[79]](P[359]));
+                                //         } catch (vB) {
+                                //             vy = !1;
+                                //         }
+                                //     }
+                                //     if (vy) {
+                                //         try {
+                                //             vD.push(v3());
+                                //             vL.b && vD.push(v0());
+                                //         } catch (vJ) {
+                                //             vD.push(P[61]);
+                                //         }
+                                //     }
+                                //     vD.push(v2());
+                                //     vL.a && vY.push(fh());
+                                //     vY.push(fl[s[0]]);
+                                //     vY.push(fl[P[154]]);
+                                //     vY.push(window[P[263]][P[365]]);
+                                //     vL.o && (vy = window[P[263]] ? [window[P[263]][P[318]], window[P[263]][s[9]]] : [M[6], M[6]], ("undefined" == typeof vy ? "undefined" : D(vy)) !== P[465] && vY.push(vy.join(P[140])));
+                                //     vY.push(new Date()[P[130]]());
+                                //     vY.push(fl[P[123]]);
+                                //     vY.push(v4());
+                                // }
+                                // vy = [];
+                                // vL.g ? (vy.push(vL.g(vD.join(s[46]))), vy.push(vL.g(vY.join(s[46])))) : (vy.push(fY(vD.join(s[46]))), vy.push(fY(vY.join(s[46]))));
+                                let vy = ["14819259374952", "1983962275258"];
                                 return vy;
                             };
                         }
@@ -10066,6 +10090,7 @@ indexedDB = watch(indexedDB, "indexedDB")
             }
             return fj(fi);
         }
+
         window.cb = f3;
 
         function f4(fw, fE, fT) {
@@ -10674,7 +10699,7 @@ function get_body_data_test() {
     ];
     let z = "7715e6883bba466980a70567b16fc246";
     let H = "CYQGCcclIo2BCDtyQc3./K.fyqlOqRutwTJr4UnJRPHmQARnoccyAhTnhPK3eX+xaDer/8srgc89upeBd5zsuD2lSvg7";
-    let f0 =[
+    let f0 = [
         42,
         4,
         0.3182,
@@ -10723,7 +10748,7 @@ function get_body_data_test() {
         -0.0156,
         0.0156
     ];
-    let traceData_encrypt=[
+    let traceData_encrypt = [
         "ieaiUvpl",
         "iwaiUvjl",
         "1ea1Uvqx",
@@ -10779,7 +10804,6 @@ function get_body_data_test() {
             'ext': window.R(window.j(z, 1 + ',' + traceData_encrypt['length']))
         })
     }
-
 
 
 }
@@ -10878,7 +10902,7 @@ function get_body_data(token, x) {
 // };
 
 // get_body_data("1234444", 34)
-console.log(get_cb_fp());
+// console.log(get_cb_fp());
 
 module.exports = {
     get_cb_fp,
